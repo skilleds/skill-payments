@@ -3,7 +3,7 @@
 Todas as mudanças relevantes deste pacote, no formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 com versionamento [SemVer](https://semver.org/lang/pt-BR/).
 
-## [Não lançado]
+## [0.3.0] — 2026-11-03
 ### Adicionado
 - `scripts/check-pay-effects.sh` (+ teste vermelho→verde): gate do piso 18, "nunca cobra fora de prd" (gateway real sem guard fail-closed/sandbox default, cobrança sem cap `PAY_MAX_*`, guard por lista negra, default prd, script de reprocesso sem dry-run, credencial/host de prd e chave não-sandbox em env não-prd).
 - Piso 28 (resiliência), piso 20 (matriz da rota de webhook), pisos 23/24 (operação em prd é do ops); bloco herdado 22–29.
