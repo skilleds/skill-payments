@@ -166,6 +166,14 @@ if [ "$verificados" -eq 0 ]; then
   echo "check-pay: nenhum arquivo de texto para verificar em $raiz (exit 2: isto NÃO é aprovação)" >&2
   exit 2
 fi
+# piso 18 (efeito externo): o gate principal também roda check-pay-effects.sh (mesmo diretório),
+# para que quem roda só este gate pegue o efeito externo. rc 2 do auxiliar (nada a verificar) não reprova.
+AQUI="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "$AQUI/check-pay-effects.sh" ]; then
+  rc_ef=0
+  bash "$AQUI/check-pay-effects.sh" "$raiz" || rc_ef=$?
+  [ "$rc_ef" -eq 0 ] || [ "$rc_ef" -eq 2 ] || achados=$((achados + 1))
+fi
 if [ "$achados" -gt 0 ]; then
   echo "check-pay: $achados achado(s) em $verificados arquivo(s)" >&2
   exit 1

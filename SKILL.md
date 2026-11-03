@@ -77,7 +77,7 @@ distância do ambiente de teste está a uma execução do incidente financeiro.
 
 ## Como usar
 
-1. **Rode os gates antes de discutir estilo:** `bash scripts/check-pay.sh .` e `bash scripts/check-external-effects.sh .`
+1. **Rode os gates antes de discutir estilo:** `bash scripts/check-pay.sh .` e `bash scripts/check-pay-effects.sh .`
    (piso 18 da engineering: gateway real com guard fail-closed, sandbox/sink default, cap `PAY_MAX_*`) — `0` passa · `1`
    reprova · `2` **nada para verificar** (que não é aprovação). Estático e sem dependência de
    linguagem ou SDK; waiver rastreável `pay-ok: <motivo>` (não vale para chave live nem PAN). Gate por commit é LOCAL; CI remoto só antes do hml/tag (piso 27).

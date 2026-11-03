@@ -5,8 +5,10 @@ com versionamento [SemVer](https://semver.org/lang/pt-BR/).
 
 ## [Não lançado]
 ### Adicionado
-- `scripts/check-external-effects.sh` (+ teste vermelho→verde): gate do piso 18, "nunca cobra fora de prd" (gateway real sem guard fail-closed/sandbox default, cobrança sem cap `PAY_MAX_*`, guard por lista negra, default prd, script de reprocesso sem dry-run, credencial/host de prd e chave não-sandbox em env não-prd).
+- `scripts/check-pay-effects.sh` (+ teste vermelho→verde): gate do piso 18, "nunca cobra fora de prd" (gateway real sem guard fail-closed/sandbox default, cobrança sem cap `PAY_MAX_*`, guard por lista negra, default prd, script de reprocesso sem dry-run, credencial/host de prd e chave não-sandbox em env não-prd).
 - Piso 28 (resiliência), piso 20 (matriz da rota de webhook), pisos 23/24 (operação em prd é do ops); bloco herdado 22–29.
+### Alterado
+- Gate do piso 18 renomeado `check-external-effects.sh` -> `check-pay-effects.sh` (+ `.test.sh`): o nome antigo é da cópia canônica herdada da engineering (restaurada por `sync-herdados`). `check-pay.sh` agora CHAMA `check-pay-effects.sh`: rodar o gate principal já cobre o efeito externo (rc 2 do auxiliar não reprova).
 ### Corrigido
 - Citação "piso 1" para efeito externo ⇒ piso 18 da engineering.
 - `check-pay.sh`: comentário não satisfaz assinatura/dedupe/idempotência; literal decimal de dinheiro (`price := 19.90`) é acusado; waiver não vale para `pay-chave-live`/`pay-pan-literal`; `HOSTS_PRD` ampliado (Cielo, Rede, Vindi, Adyen live).

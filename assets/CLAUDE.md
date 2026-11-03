@@ -16,7 +16,7 @@ Pagamento move dinheiro irreversível. O estado é uma máquina; o ledger é a v
 
 Mídia: imagem/visual gerado nunca por modelo Claude; detecte Codex/Gemini e pergunte qual usar.
 
-Gates: `bash .claude/skills/schematize-payments/scripts/check-pay.sh .` e `.../check-external-effects.sh .` (piso 18: nunca cobra fora de prd) — waiver rastreável
+Gates: `bash .claude/skills/schematize-payments/scripts/check-pay.sh .` e `.../check-pay-effects.sh .` (piso 18: nunca cobra fora de prd) — waiver rastreável
 `# pay-ok: <motivo>`.
 
 <!-- herdado:engineering/pisos-22-29:bloco -->**Herda os pisos 22–29 da `schematize-engineering`** (texto completo em `assets/CLAUDE.md` dela): 22 tudo no git — sem remote, push falho ou HEAD≠origin a demanda NÃO se conclui; 23 deploy só do git (VETADO scp/rsync/tar|ssh/docker save|load/git bundle); 24 o ops é o gate da IA — a IA nunca muda a VPS direto nem escreve SQL, só operação nomeada (`ssh vps "ops <op>"`); 25 sem agents inúteis (entregou, morreu); 26 relatório a cada 30 min e handoff a cada 6 h; 27 CI remoto só antes do hml, a pedido ou em tag (`workflow_dispatch` + `hml-*`/`v*`; VETADO `pull_request`, `push` em branch, `workflow_run`, cron sem justificativa); 28 microserviço autônomo (fila durável + 7 testes de resiliência); 29 build/teste na máquina dev/hml quando existe (ponte só no workspace de build, nunca prd) + higiene (`scripts/higiene.sh`).<!-- /herdado -->

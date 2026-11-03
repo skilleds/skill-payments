@@ -1,127 +1,56 @@
 #!/usr/bin/env bash
-# Vermelho->verde do gate check-external-effects.sh (payments, piso 18: nunca cobra fora de prd).
-# EXCEÇÃO DECLARADA (schematize-shell): harness `set -u` sem `-e` para reportar todos os casos.
-set -u
-AQUI="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-G="$AQUI/check-external-effects.sh"
-TMP="$(mktemp -d)"
-trap 'rm -rf "${TMP:?}"' EXIT INT TERM
-ok=0; fail=0; D=""; NOME=""
-novo() { D="$TMP/$1"; mkdir -p "$D"; NOME="$1"; }
-f() { mkdir -p "$(dirname "$D/$1")"; sed 's/@@LIVE@@/sk_live_/g' >"$D/$1"; }
-esperar() {
-  local esp="$1" agulha="$2" saida rc
-  saida="$(bash "$G" "$D" 2>&1)"; rc=$?
-  if [ "$rc" != "$esp" ]; then echo "  ✖ $NOME: exit $rc, esperado $esp"; sed 's/^/      /' <<<"$saida"; fail=$((fail+1)); return; fi
-  if [ -n "$agulha" ] && ! grep -qF -- "$agulha" <<<"$saida"; then echo "  ✖ $NOME: saída sem \"$agulha\""; sed 's/^/      /' <<<"$saida"; fail=$((fail+1)); return; fi
-  echo "  ✔ $NOME"; ok=$((ok+1))
-}
-echo "== gate external-effects (pay) =="
-novo vazio; mkdir -p "$D"; esperar 2 "nenhum arquivo"
+# herdado de schematize-engineering — não edite aqui (fonte: skill-engineering/scripts/check-external-effects.test.sh; regenere: node tools/sync-herdados.mjs)
+# check-external-effects.test.sh — o VERMELHO VISTO do gate de efeito externo.
+#
+# Motivo: o gate existia em UM lugar (schematize-engineering) e NUNCA tinha reprovado de proposito.
+# Piso sem vermelho visto e prosa: o ADR-0004 nasceu de um incidente de >5.000 e-mails, e um gate
+# que nunca travou nao prova nada. Este teste planta cada uma das violacoes e exige exit 1.
+# Entrada: nenhuma. Saida: exit 0 todos os casos passam - exit 1 algum caso falhou.
+# EXCEÇÃO DECLARADA de strict mode (`schematize-shell` -> `references/piso.md` secao 1):
+# harness de teste roda sem `-e` de propósito — ele precisa continuar depois de um caso
+# vermelho para reportar TODOS, em vez de parar no primeiro.
+set -uo pipefail
+G="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/check-external-effects.sh"
+W="$(mktemp -d)"; trap 'rm -rf "$W"' EXIT
+rc=0
 
-GW_OK='import os
-ENV = os.environ.get("PAY_ENV", "dev")
-CAP = int(os.environ.get("PAY_MAX_CHARGES_PER_RUN", "10"))
-class SandboxGateway:
-    def charge(self, cents): return {"id": "sbx"}
-class RealGateway:
-    def __init__(self):
-        if ENV != "prd":
-            raise PermissionError("gateway real recusa subir fora de prd")
-    def charge(self, cents):
-        return requests.post("https://psp.example/payments", json={"amount": cents}, headers={"Idempotency-Key": "k"})
-def gateway():
-    return RealGateway() if ENV == "prd" else SandboxGateway()
-'
-novo verde-gateway-guardado
-printf '%s' "$GW_OK" | f src/gateway.py
-esperar 0 "ok ("
+echo "── projeto limpo passa"
+P="$W/limpo"; mkdir -p "$P/test"
+printf 'user = "qa+1@test.exemplo.test"\n' > "$P/test/seed.sql"
+printf 'APP_ENV=dev\nRESEND_API_KEY=re_sandbox_xxx\nMAIL_MAX_PER_RUN=50\n' > "$P/.env"
+OUT=$(bash "$G" "$P" 2>&1); z=$?
+if [ "$z" -eq 0 ]; then echo "  ✔ exit 0"; else echo "  ✖ exit $z: $OUT"; rc=1; fi
 
-novo vermelho-real-nos-dois-ramos
-f src/gateway.py <<'FIX'
-import os
-ENV = os.environ.get("PAY_ENV")
-CAP = os.environ.get("PAY_MAX_CHARGES_PER_RUN")
-class RealGateway: pass
-if ENV == "production":
-    gw = RealGateway()
-else:
-    gw = RealGateway()
-FIX
-esperar 1 "pay-gateway-sem-guarda"
+echo "── e-mail de CAIXA REAL em seed BLOQUEIA (o acidente das 5.000 mensagens)"
+P="$W/real"; mkdir -p "$P/test"
+printf "INSERT INTO users (email) VALUES ('fulano@gmail.com');\n" > "$P/test/seed.sql"
+OUT=$(bash "$G" "$P" 2>&1); z=$?
+if [ "$z" -eq 1 ] && grep -q 'caixa REAL' <<<"$OUT"; then echo "  ✔ exit 1"; else echo "  ✖ exit $z: $OUT"; rc=1; fi
 
-novo vermelho-cobranca-direta-sem-guard
-f src/checkout.js <<'FIX'
-await fetch(`${PSP}/payments`, { method: "POST", body: JSON.stringify({ amount }) });
-FIX
-esperar 1 "pay-gateway-sem-guarda"
+echo "── chave de provedor NAO-sandbox em .env de dev BLOQUEIA"
+P="$W/chave"; mkdir -p "$P"
+printf 'APP_ENV=hml\nRESEND_API_KEY=re_live_abc123def456\nMAIL_MAX_PER_RUN=50\n' > "$P/.env"
+OUT=$(bash "$G" "$P" 2>&1); z=$?
+if [ "$z" -eq 1 ] && grep -q 'credencial de provedor' <<<"$OUT"; then echo "  ✔ exit 1"; else echo "  ✖ exit $z: $OUT"; rc=1; fi
 
-novo vermelho-guard-so-em-comentario
-f src/checkout.py <<'FIX'
-# if ENV == "prd": raise PermissionError  PAY_MAX_CHARGES_PER_RUN Sandbox
-requests.post(PSP + "/payments", json={})
-FIX
-esperar 1 "pay-gateway-sem-guarda"
+echo "── .env SEM ambiente declarado e tratado como NAO-prd (fail-closed)"
+P="$W/semenv"; mkdir -p "$P"
+printf 'RESEND_API_KEY=re_live_abc123def456\nMAIL_MAX_PER_RUN=50\n' > "$P/.env"
+OUT=$(bash "$G" "$P" 2>&1); z=$?
+if [ "$z" -eq 1 ]; then echo "  ✔ exit 1 (config ausente nao vira permissao)"; else echo "  ✖ exit $z: $OUT"; rc=1; fi
 
-novo vermelho-sem-cap
-printf '%s' "$GW_OK" | grep -v PAY_MAX | f src/gateway.py
-esperar 1 "pay-cobranca-sem-cap"
+echo "── envio configurado SEM cap por execucao avisa"
+P="$W/semcap"; mkdir -p "$P"
+printf 'APP_ENV=dev\nSMTP_HOST=localhost\n' > "$P/.env"
+OUT=$(bash "$G" "$P" 2>&1)
+if grep -q 'cap por execução' <<<"$OUT"; then echo "  ✔ avisou"; else echo "  ✖ silencio: $OUT"; rc=1; fi
 
-novo vermelho-default-prd
-printf '%s' "$GW_OK" | sed 's/"PAY_ENV", "dev"/"PAY_ENV", "production"/' | f src/gateway.py
-esperar 1 "pay-default-prd"
+echo "── ambiente de PRODUCAO nao e barrado pela regra de chave"
+P="$W/prd"; mkdir -p "$P"
+printf 'APP_ENV=production\nRESEND_API_KEY=re_live_abc123def456\nMAIL_MAX_PER_RUN=50\n' > "$P/.env"
+OUT=$(bash "$G" "$P" 2>&1); z=$?
+if [ "$z" -eq 0 ]; then echo "  ✔ exit 0 (o piso e sobre NAO-producao)"; else echo "  ✖ exit $z: $OUT"; rc=1; fi
 
-novo vermelho-lista-negra
-printf '%s\n' "$GW_OK" 'def z(env):' '    if env != "dev": return RealGateway()' | f src/gateway.py
-esperar 1 "pay-guard-nao-fail-closed"
-
-novo vermelho-reprocesso-sem-dryrun
-f scripts/reprocessar_cobrancas.py <<'FIX'
-import requests
-for c in pendentes:
-    requests.post(PSP + "/payments", json=c)
-FIX
-esperar 1 "pay-script-sem-dryrun"
-
-novo vermelho-chave-live-em-env-hml
-f .env.hml <<'FIX'
-PSP_API_KEY_PROD=abc
-FIX
-esperar 1 "pay-prd-em-nao-prd"
-
-novo vermelho-host-prd-em-staging
-f config/staging.yaml <<'FIX'
-psp_url: https://api.cieloecommerce.cielo.com.br/1/sales
-FIX
-esperar 1 "pay-prd-em-nao-prd"
-
-novo vermelho-chave-sem-marca-sandbox
-f .env.dev <<'FIX'
-PSP_API_KEY=9f8e7d6c5b4a
-FIX
-esperar 1 "pay-chave-nao-sandbox"
-
-novo vermelho-waiver-nao-vale-em-env
-f .env.dev <<'FIX'
-# pay-ok: preciso
-PSP_API_KEY_LIVE=abc
-FIX
-esperar 1 "pay-prd-em-nao-prd"
-
-novo verde-chave-sandbox-em-env-dev
-f .env.dev <<'FIX'
-PSP_API_KEY=sandbox_9f8e7d
-FIX
-esperar 0 "ok ("
-
-novo verde-reprocesso-com-dryrun
-f scripts/reprocessar_cobrancas.py <<'FIX'
-import sys
-DRY_RUN = "--apply" not in sys.argv
-for c in pendentes:
-    print("faria", c) if DRY_RUN else None
-FIX
-esperar 0 "ok ("
-
-echo "== $ok ok, $fail falha(s) =="
-[ "$fail" -eq 0 ]
+echo
+[ $rc -eq 0 ] && echo "✔ check-external-effects.test.sh: todos os casos" || echo "✖ check-external-effects.test.sh: falhou"
+exit $rc

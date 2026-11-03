@@ -56,6 +56,7 @@ export function handlerWebhook(req: Req) {
 }
 FIX
 f src/cobranca.ts <<'FIX'
+// pay-ok: fixture do gate principal; guard/cap do piso 18 têm suíte própria (check-pay-effects.test.sh)
 export async function criarCobranca(c: Cliente, valorCentavos: number, chave: string) {
   return c.post("/payments", { amount: valorCentavos }, { headers: { "Idempotency-Key": chave } });
 }
@@ -374,6 +375,14 @@ f config/staging.yaml <<'FIX'
 psp: https://api.cieloecommerce.cielo.com.br/1/sales
 FIX
 esperar 1 "pay-prd-em-nao-prd"
+
+# ---------------- gate principal inclui o piso 18 (check-pay-effects.sh)
+novo vermelho-efeito-externo-via-gate-principal
+f src/cobrar.py <<'FIX'
+def cobrar(c, cents):
+    return c.post("/payments", json={"amount": cents}, headers={"Idempotency-Key": "k"})
+FIX
+esperar 1 "pay-gateway-sem-guarda"
 
 echo "== resultado: $ok ok, $fail falhas =="
 [ "$fail" -eq 0 ]

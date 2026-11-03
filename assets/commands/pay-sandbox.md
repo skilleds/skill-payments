@@ -7,7 +7,7 @@ argument-hint: "[diretório do repo]"
 
 Piso 1 da skill. Execute e **mostre a saída**; não declare "seguro" sem prova.
 
-1. **Gates:** `bash .claude/skills/schematize-payments/scripts/check-external-effects.sh "${ARGUMENTS:-.}"` (piso 18: `pay-gateway-sem-guarda`, `pay-cobranca-sem-cap`, `pay-chave-nao-sandbox`) e `.../check-pay.sh "${ARGUMENTS:-.}"` —
+1. **Gates:** `bash .claude/skills/schematize-payments/scripts/check-pay-effects.sh "${ARGUMENTS:-.}"` (piso 18: `pay-gateway-sem-guarda`, `pay-cobranca-sem-cap`, `pay-chave-nao-sandbox`) e `.../check-pay.sh "${ARGUMENTS:-.}"` —
    atenção a `pay-chave-live`, `pay-prd-em-nao-prd` e `pay-default-prd`. Configure
    `PAY_PROD_HOSTS` com os hosts de produção do PSP em uso.
 2. **Fail-closed:** localize onde o ambiente é lido. Ausente, vazio, `dev`, `hml`, `prod`,

@@ -59,7 +59,7 @@ rota nula e a exceção de cinco condições valem aqui sem cópia local: bloco 
 
 ## 4. Como provar (não basta declarar)
 
-- `bash scripts/check-external-effects.sh .` sem achados (`pay-gateway-sem-guarda`, `pay-cobranca-sem-cap`,
+- `bash scripts/check-pay-effects.sh .` sem achados (`pay-gateway-sem-guarda`, `pay-cobranca-sem-cap`,
   `pay-guard-nao-fail-closed`, `pay-chave-nao-sandbox`, `pay-script-sem-dryrun`), mais
 - `bash scripts/check-pay.sh .` sem achados de `pay-chave-live`, `pay-prd-em-nao-prd` e
   `pay-default-prd`.
