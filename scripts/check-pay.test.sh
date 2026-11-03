@@ -227,7 +227,7 @@ esperar 1 "pay-webhook-sem-assinatura"
 novo webhook-rust-mtls-verde
 f src/webhook_handler.rs <<'FIX'
 // webhook do PSP Pix: mTLS exigido no proxy (client cert verificado); dedupe por event_id
-async fn webhook_handler(req: Req) { insert_event(req.event_id).await; }
+async fn webhook_handler(req: Req) { require_client_cert(&req)?; insert_event(req.event_id).await; }
 FIX
 esperar_sem "pay-webhook-"
 novo webhook-em-teste-verde
@@ -332,6 +332,48 @@ f db/003.sql <<'FIX'
 CREATE TABLE cartao (id bigint, psp_token text NOT NULL, last4 char(4), brand text);
 FIX
 esperar_sem "pay-pan-armazenado"
+
+# ---------------- falsos verdes corrigidos (G8b)
+novo webhook-assinatura-so-em-comentario
+f src/hook.ts <<'FIX'
+router.post("/webhooks/pix", async (req, res) => {
+  // verifica hmac depois; unique no banco
+  await db.paid(req.body.txid);
+});
+FIX
+esperar 1 "pay-webhook-sem-assinatura"
+novo cobranca-idempotency-so-em-comentario
+f src/cobra.py <<'FIX'
+psp.post("/payments", json={"amount": 10})  # idempotency
+FIX
+esperar 1 "pay-cobranca-sem-idempotencia"
+novo literal-decimal-go
+f src/preco.go <<'FIX'
+price := 19.90
+FIX
+esperar 1 "pay-float-dinheiro"
+novo literal-decimal-ts
+f src/preco.ts <<'FIX'
+const total = 19.9;
+FIX
+esperar 1 "pay-float-dinheiro"
+novo literal-centavos-verde
+f src/preco.go <<'FIX'
+price := 1990
+version := 1.5
+FIX
+esperar_sem "pay-float-dinheiro"
+novo waiver-nao-vale-chave-live
+f src/cfg.ts <<'FIX'
+// pay-ok: so em teste
+const k = "@@LIVE@@abcdefghijklmnop1234";
+FIX
+esperar 1 "pay-chave-live"
+novo host-cielo-em-staging
+f config/staging.yaml <<'FIX'
+psp: https://api.cieloecommerce.cielo.com.br/1/sales
+FIX
+esperar 1 "pay-prd-em-nao-prd"
 
 echo "== resultado: $ok ok, $fail falhas =="
 [ "$fail" -eq 0 ]

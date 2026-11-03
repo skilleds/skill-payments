@@ -25,8 +25,9 @@ schematize install payments    # requer o CLI schematize instalado
 ### Manual
 
 ```bash
-git clone https://github.com/schematizeme/skill-payments.git /tmp/skill-payments
-bash /tmp/skill-payments/install.sh .        # instala em .claude/ do projeto atual
+T="$(mktemp -d)"   # nunca /tmp fixo
+git clone https://github.com/schematizeme/skill-payments.git "$T/skill-payments"
+bash "$T/skill-payments/install.sh" .        # instala em .claude/ do projeto atual
 ```
 
 ## O que tem dentro
@@ -36,7 +37,7 @@ bash /tmp/skill-payments/install.sh .        # instala em .claude/ do projeto at
 - **references/** — `estado-e-ledger`, `pix`, `cartao-pci`, `boleto-recorrencia`,
   `webhooks-idempotencia`, `split-conciliacao-fiscal`, `nao-cobrar-fora-de-prd` e `stack-versoes`
   (anexo volátil com fonte, data e o que não foi verificado).
-- **scripts/** — `check-pay.sh`, o gate estático (10 regras, sem depender de linguagem ou SDK de PSP;
+- **scripts/** — `check-external-effects.sh` (piso 18: nunca cobra fora de prd) e `check-pay.sh`, o gate estático (10 regras, sem depender de linguagem ou SDK de PSP;
   waiver rastreável `pay-ok:`), e `check-pay.test.sh` (casos vermelhos e verdes plantados).
 - **assets/** — `commands/` e `CLAUDE.md` sempre-on.
 

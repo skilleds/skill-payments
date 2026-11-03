@@ -48,6 +48,14 @@ sem deduplicação (`pay-webhook-sem-dedupe`).
 Estado + lançamento + evento recebido na **mesma transação**; chamada a PSP, e-mail de recibo e
 emissão de nota saem por **outbox** depois do commit, com a mesma disciplina de idempotência.
 
+## 3.1 Resiliência (piso 28 da engineering)
+Webhook perdido = cliente pago sem acesso (ou o inverso). Persista o evento (inbox durável, NUNCA memória)
+**antes** de responder 2xx (ack só depois do commit). PSP indisponível ⇒ a cobrança vai para a outbox com
+retry (backoff+jitter) e o checkout/serviço segue vivo; mensagem envenenada ⇒ DLQ após N tentativas.
+Matriz mínima: (1) boot com PSP fora; (2) timeout/5xx ⇒ outbox, serviço saudável; (3) reinício com fila
+cheia ⇒ drena sem perda nem duplicata; (4) reentrega idempotente; (5) envenenada ⇒ DLQ; (6) shutdown
+gracioso sem perda; (7) crash entre persistir e confirmar ⇒ sem perda. Gate da base: `check-resilience.sh`.
+
 ## 4. Testar
 
 - Teste de propriedade: processar o mesmo evento N vezes ⇒ efeito 1 vez.

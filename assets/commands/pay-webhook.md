@@ -21,6 +21,8 @@ Alvo: `${ARGUMENTS}`. Leia `references/webhooks-idempotencia.md` e, para PIX, `r
 6. **Testes** (contra dublê, nunca PSP real): evento repetido N vezes ⇒ efeito 1 vez; ordem
    embaralhada ⇒ mesmo estado; corpo alterado/assinatura inválida/replay ⇒ rejeitado.
 
+7. **Matriz de acesso (piso 20)**: a rota `/webhooks/<psp>` entra na matriz (schematize-qa): anônimo sem assinatura ⇒ `401` sem corpo útil; assinatura de outro ambiente ⇒ `401`; método trocado, path alternativo e rota debug ⇒ negados; M == N com o inventário de rotas.
+
 **Auditar:** rode `bash .claude/skills/schematize-payments/scripts/check-pay.sh .`
 (`pay-webhook-sem-assinatura`, `pay-webhook-sem-dedupe`) e confira os seis pontos acima no handler.
 Contrato genérico de webhook (versionamento, retry de saída): `schematize-api`.

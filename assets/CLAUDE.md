@@ -16,5 +16,7 @@ Pagamento move dinheiro irreversível. O estado é uma máquina; o ledger é a v
 
 Mídia: imagem/visual gerado nunca por modelo Claude; detecte Codex/Gemini e pergunte qual usar.
 
-Gate: `bash .claude/skills/schematize-payments/scripts/check-pay.sh .` — waiver rastreável
+Gates: `bash .claude/skills/schematize-payments/scripts/check-pay.sh .` e `.../check-external-effects.sh .` (piso 18: nunca cobra fora de prd) — waiver rastreável
 `# pay-ok: <motivo>`.
+
+Herda os pisos 22–29 da `schematize-engineering` (git como trava de conclusão, deploy só do git, ops é o gate da IA, sem agents inúteis, relatório 30 min/handoff 6 h, CI remoto só antes do hml, microserviço autônomo, build em dev/hml + higiene).

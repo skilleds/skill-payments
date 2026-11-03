@@ -19,6 +19,7 @@ Alvo: `${ARGUMENTS:-.}`. Leia `references/split-conciliacao-fiscal.md` §2.
 6. **Fuso:** normalize para UTC registrando o fuso de origem.
 7. **Pipeline:** contrato do arquivo do PSP, quarentena do que não parseia, lineage até o lançamento
    (`schematize-data`).
+8a. **Correção em prd (pisos 23/24):** lançamento corretivo, reprocesso e backfill em prd são OPERAÇÕES NOMEADAS do ops (dry-run, confirmação humana, auditoria append-only); a IA só as implementa no repo do ops, nunca grava lançamento nem roda SQL/script ad hoc em prd.
 8. **Alerta:** saldo de exceções acima do limite, ou dia sem conciliar, abre incidente
    (`schematize-observability`).
 9. **Entregue** o desenho (ou os achados da auditoria) e o teste de propriedade: reprocessar N vezes

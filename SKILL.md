@@ -59,7 +59,7 @@ distância do ambiente de teste está a uma execução do incidente financeiro.
 | Segredo do PSP commitado | `schematize-git` | `/git-leak`; `schematize-git → references/segredos.md` |
 | Segredo e cofre, rede, mTLS no ingress | `schematize-infra` | aqui o que exigir do PSP |
 | Alerta/SLO de taxa de falha, chargeback e atraso de webhook | `schematize-observability` | aqui o que medir |
-| Efeito externo fora de prd (base) | `schematize-engineering → references/efeitos-externos.md` | herdado, piso 1 |
+| Efeito externo fora de prd (base) | `schematize-engineering → references/efeitos-externos.md` | herdado, piso 18 da engineering |
 
 ## Comandos (Claude Code)
 
@@ -77,9 +77,10 @@ distância do ambiente de teste está a uma execução do incidente financeiro.
 
 ## Como usar
 
-1. **Rode o gate antes de discutir estilo:** `bash scripts/check-pay.sh .` — `0` passa · `1`
+1. **Rode os gates antes de discutir estilo:** `bash scripts/check-pay.sh .` e `bash scripts/check-external-effects.sh .`
+   (piso 18 da engineering: gateway real com guard fail-closed, sandbox/sink default, cap `PAY_MAX_*`) — `0` passa · `1`
    reprova · `2` **nada para verificar** (que não é aprovação). Estático e sem dependência de
-   linguagem ou SDK; waiver rastreável `pay-ok: <motivo>`.
+   linguagem ou SDK; waiver rastreável `pay-ok: <motivo>` (não vale para chave live nem PAN). Gate por commit é LOCAL; CI remoto só antes do hml/tag (piso 27).
 2. **Modele antes de integrar** (`references/estado-e-ledger.md`): dinheiro inteiro, estados,
    ledger. A integração com o PSP é uma camada fina por cima.
 3. **Escolha o meio** (`references/pix.md`, `cartao-pci.md`, `boleto-recorrencia.md`) e o PSP por
@@ -87,7 +88,7 @@ distância do ambiente de teste está a uma execução do incidente financeiro.
 4. **Webhook e idempotência** (`references/webhooks-idempotencia.md`) antes do primeiro pagamento real.
 5. **Conciliação e fiscal** (`references/split-conciliacao-fiscal.md`) fazem parte do "pronto",
    não do "depois".
-6. **Prove o piso 1** (`references/nao-cobrar-fora-de-prd.md`) antes de ligar qualquer credencial.
+6. **Prove o piso 1 DESTA skill (na base é o piso 18)** (`references/nao-cobrar-fora-de-prd.md`) antes de ligar qualquer credencial.
 
 Mapa de references:
 
@@ -161,3 +162,5 @@ Mermaid ou texto no repo (`schematize-docs`).
 - **`schematize-institutional`** — LGPD, termos, devolução ao consumidor, retenção.
 - **`schematize-qa`** · **`schematize-pentest`** — prova por teste e por ataque.
 - **`schematize-observability`** — SLO de pagamento, alerta de chargeback e de webhook parado.
+
+Herda os pisos 22–29 da `schematize-engineering` (git como trava de conclusão, deploy só do git, ops é o gate da IA, sem agents inúteis, relatório 30 min/handoff 6 h, CI remoto só antes do hml, microserviço autônomo, build em dev/hml + higiene).

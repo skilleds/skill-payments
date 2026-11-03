@@ -7,7 +7,7 @@ argument-hint: "[diretório do repo]"
 
 Piso 1 da skill. Execute e **mostre a saída**; não declare "seguro" sem prova.
 
-1. **Gate:** `bash .claude/skills/schematize-payments/scripts/check-pay.sh "${ARGUMENTS:-.}"` —
+1. **Gates:** `bash .claude/skills/schematize-payments/scripts/check-external-effects.sh "${ARGUMENTS:-.}"` (piso 18: `pay-gateway-sem-guarda`, `pay-cobranca-sem-cap`, `pay-chave-nao-sandbox`) e `.../check-pay.sh "${ARGUMENTS:-.}"` —
    atenção a `pay-chave-live`, `pay-prd-em-nao-prd` e `pay-default-prd`. Configure
    `PAY_PROD_HOSTS` com os hosts de produção do PSP em uso.
 2. **Fail-closed:** localize onde o ambiente é lido. Ausente, vazio, `dev`, `hml`, `prod`,
@@ -17,7 +17,7 @@ Piso 1 da skill. Execute e **mostre a saída**; não declare "seguro" sem prova.
    subir fora de prd.
 4. **Credenciais:** a chave de produção do PSP não aparece em segredo de hml/CI (liste os
    segredos por ambiente; `schematize-infra`). Chave exposta ⇒ rotacionar primeiro.
-5. **Testes:** nenhum teste chama o PSP real; CI usa dublê; job de sandbox tem credencial sandbox.
+5. **Testes:** nenhum teste chama o PSP real; CI usa dublê; job de sandbox tem credencial sandbox e roda só em `workflow_dispatch` ou tag de promoção (`hml-*`/`v*`), nunca por commit/PR (piso 27); o gate por commit é local.
 6. **Webhook e fiscal:** webhook de hml aponta para sandbox; emissão fiscal em homologação.
 7. **Dado sintético:** cliente, e-mail (`<papel>+<run-id>-<n>@test.<domínio>` em rota nula), CPF/CNPJ
    de teste; nenhuma pessoa real, **inclusive o desenvolvedor**.

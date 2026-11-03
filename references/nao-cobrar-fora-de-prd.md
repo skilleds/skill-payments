@@ -43,6 +43,10 @@ teste, um seed mal escrito ou uma credencial de produção copiada para `.env.lo
 11. **Dry-run por padrão** em script operacional que mexe em dinheiro (reprocessar cobranças,
     repasse manual, backfill): imprime o que faria; executar exige flag explícita **e** confirmação
     humana em prd.
+11a. **Operação em prd é do ops (pisos 23/24).** Reprocesso, repasse, backfill e lançamento corretivo
+    de ledger em prd são **operações nomeadas** do `<projeto>_ops` (dry-run, confirmação humana,
+    auditoria append-only). A IA só as implementa no repo do ops, via git; nunca roda SQL, script ad
+    hoc nem `ssh` mutável em prd. Gate: `pay-script-sem-dryrun`.
 12. **Cobrar de verdade fora de prd** (ex.: validar um PSP novo com cartão real) exige **ADR +
     allowlist ≤ 5 contas + cap de valor e quantidade + janela + conta/credencial separada** e
     estorno planejado. É exceção humana (`[H ]`), nunca decisão do agente.
@@ -51,14 +55,16 @@ teste, um seed mal escrito ou uma credencial de produção copiada para `.env.lo
 
 Cap por execução com abort, fail-closed, chave sandbox fora de prd, dado sintético em domínio de
 rota nula e a exceção de cinco condições valem aqui sem cópia local: bloco herdado no `SKILL.md`
-(piso 1) e texto integral em `schematize-engineering → references/efeitos-externos.md`.
+(piso 18 da engineering; o "piso 1" desta skill é o local) e texto integral em `schematize-engineering → references/efeitos-externos.md`.
 
 ## 4. Como provar (não basta declarar)
 
+- `bash scripts/check-external-effects.sh .` sem achados (`pay-gateway-sem-guarda`, `pay-cobranca-sem-cap`,
+  `pay-guard-nao-fail-closed`, `pay-chave-nao-sandbox`, `pay-script-sem-dryrun`), mais
 - `bash scripts/check-pay.sh .` sem achados de `pay-chave-live`, `pay-prd-em-nao-prd` e
   `pay-default-prd`.
 - Teste de unidade: `ambiente ∈ {ausente, "", "dev", "hml", "PRODUCTION ", "prod"}` ⇒ gateway
-  sandbox; **só** `"production"` ⇒ gateway real.
+  sandbox; **só** o valor exato de prd ⇒ gateway real (o guard fica DENTRO do construtor do real).
 - Teste de integração em sandbox: cobrança de teste cria, confirma por webhook, estorna e fecha o
   ledger a zero.
 - Auditoria de credencial: a chave live **não** aparece em nenhum segredo de hml/CI
