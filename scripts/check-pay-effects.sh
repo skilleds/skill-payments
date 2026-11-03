@@ -21,6 +21,7 @@
 set -euo pipefail
 
 raiz="${1:-.}"
+tmp=""; trap 'rm -f "${tmp:-}"' EXIT   # temporário do loop some mesmo com Ctrl-C
 [ -d "$raiz" ] || { echo "check-pay-effects: diretório inexistente: $raiz" >&2; exit 2; }
 
 CODE_RE='\.(go|rs|ex|exs|cs|rb|py|ts|tsx|js|jsx|mjs|cjs|php|java|kt|swift|dart|zig|sh)$'

@@ -14,7 +14,7 @@ com versionamento [SemVer](https://semver.org/lang/pt-BR/).
 - `check-pay.sh`: comentário não satisfaz assinatura/dedupe/idempotência; literal decimal de dinheiro (`price := 19.90`) é acusado; waiver não vale para `pay-chave-live`/`pay-pan-literal`; `HOSTS_PRD` ampliado (Cielo, Rede, Vindi, Adyen live).
 - README sem `/tmp` fixo; CI sandbox só por dispatch/tag (piso 27).
 - [~] Hosts novos de PSP não conferidos em fonte oficial nesta onda (Stripe, Pagar.me e Iugu usam o mesmo host em teste/live, distinguidos só pela chave); e `stack-versoes.md` ainda sem fonte primária BCB/PCI; Open Finance/DICT por escrever.
-
+- `check-pay-effects.sh`: `trap ... EXIT` remove o temporário do loop mesmo com Ctrl-C.
 ## [0.2.1] — 2026-10-14
 Ponteiro para a skill nova `schematize-bots` (piso curto, sem duplicar).
 
