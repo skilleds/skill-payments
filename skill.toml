@@ -3,7 +3,7 @@ name = "schematize-payments"
 tag = "Disciplina · Pagamentos (BR)"
 status = "beta"
 order = 45
-current_version = "0.2.1"
+current_version = "0.3.0"
 href = "/payments"
 
 [descriptions]

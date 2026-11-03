@@ -1,0 +1,12 @@
+slug = "payments"
+name = "schematize-payments"
+tag = "Disciplina · Pagamentos (BR)"
+status = "beta"
+order = 45
+current_version = "0.3.0"
+href = "/payments"
+
+[descriptions]
+pt = "Pagamentos no Brasil sem incidente financeiro: PIX (cobrança, QR dinâmico, devolução, webhook), boleto, cartão sem tocar PAN (SAQ A), dinheiro em centavos, ledger de dupla entrada, máquina de estados, webhooks idempotentes, split, conciliação, NF-e/NFS-e e nunca cobrar fora de prd."
+en = "Brazilian payments without financial incidents: PIX (charges, dynamic QR, refunds, webhooks), boleto, cards without touching the PAN (SAQ A), money in cents, double-entry ledger, state machine, idempotent webhooks, split, reconciliation, NF-e/NFS-e and never charging outside prd."
+es = "Pagos en Brasil sin incidentes financieros: PIX (cobro, QR dinámico, devolución, webhook), boleto, tarjeta sin tocar el PAN (SAQ A), dinero en centavos, libro mayor de doble entrada, máquina de estados, webhooks idempotentes, split, conciliación, NF-e/NFS-e y nunca cobrar fuera de prd."

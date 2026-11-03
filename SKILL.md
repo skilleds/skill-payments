@@ -1,7 +1,7 @@
 ---
 name: schematize-payments
 metadata:
-  version: 0.2.1
+  version: 0.3.0
 description: >-
   Pagamentos BR: PIX, boleto, cartão sem tocar PAN, ledger em centavos, webhooks idempotentes, conciliação. Use ao integrar PSP ou cobrança. Nunca cobra fora de prd. Gate check-pay.sh.
 ---
@@ -15,7 +15,7 @@ dinheiro irreversível dentro**. Quem guarda valor em `float`, confia no redirec
 prova de "pago", processa o mesmo webhook duas vezes ou deixa a chave de produção a um `.env` de
 distância do ambiente de teste está a uma execução do incidente financeiro.
 
-**Versão:** skill `schematize-payments` v0.2.1. Changelog em `CHANGELOG.md`.
+**Versão:** skill `schematize-payments` v0.3.0. Changelog em `CHANGELOG.md`.
 
 ## Precedência e herança (leia antes de divergir)
 
